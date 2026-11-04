@@ -46,3 +46,6 @@ user entered in their own personal account with their personal information.
 
 <img width="1080" height="1453" alt="image" src="https://github.com/user-attachments/assets/002c2b0a-995c-4bec-bee0-b93dcbbf27fb" />
 
+**8.Project Repository**
+
+https://github.com/258x5a4207-Stack/Job-Board..git
