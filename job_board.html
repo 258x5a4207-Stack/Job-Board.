@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOB BOARD - Find Your Next Career Move</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#2563eb',
+                            600: '#1d4ed8',
+                            700: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .modal-blur {
+            backdrop-filter: blur(4px);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-30 bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Brand -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="resetFilters()">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-600 flex items-center justify-center text-white font-black text-xl shadow-md">
+                        JB
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight text-slate-900">JOB BOARD</span>
+                        <span class="hidden sm:inline-block text-xs font-semibold px-2 py-0.5 rounded bg-brand-50 text-brand-600 ml-2">Global Careers</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Quick Links -->
+                <nav class="hidden md:flex space-x-6">
+                    <button onclick="setActiveTab('explore')" id="nav-explore" class="text-sm font-semibold text-brand-600 border-b-2 border-brand-600 pb-1 transition-all">Explore Jobs</button>
+                    <button onclick="setActiveTab('preferences')" id="nav-preferences" class="text-sm font-medium text-slate-600 hover:text-slate-900 pb-1 transition-all">My Preferences</button>
+                    <button onclick="setActiveTab('saved')" id="nav-saved" class="text-sm font-medium text-slate-600 hover:text-slate-900 pb-1 transition-all flex items-center gap-1.5">
+                        <span>Saved Jobs</span>
+                        <span id="saved-count-badge" class="bg-slate-100 text-slate-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button onclick="setActiveTab('applied')" id="nav-applied" class="text-sm font-medium text-slate-600 hover:text-slate-900 pb-1 transition-all flex items-center gap-1.5">
+                        <span>Applied</span>
+                        <span id="applied-count-badge" class="bg-brand-100 text-brand-700 text-xs px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                </nav>
+
+                <!-- User & Auth Status -->
+                <div class="flex items-center space-x-3">
+                    <div id="auth-logged-out" class="flex items-center space-x-2">
+                        <button onclick="openAuthModal('login')" class="text-sm font-semibold text-slate-700 hover:text-brand-600 px-3 py-2 rounded-lg hover:bg-slate-100 transition-all">Log In</button>
+                        <button onclick="openAuthModal('signup')" class="text-sm font-semibold text-white bg-brand-600 hover:bg-brand-700 px-4 py-2 rounded-lg shadow-sm transition-all">Sign Up</button>
+                    </div>
+
+                    <div id="auth-logged-in" class="hidden items-center space-x-3">
+                        <div class="flex items-center space-x-2 cursor-pointer" onclick="openPreferencesModal()">
+                            <img id="user-avatar" src="https://placehold.co/100x100/2563eb/ffffff?text=U" alt="User Avatar" class="w-9 h-9 rounded-full ring-2 ring-brand-500/20">
+                            <div class="hidden lg:block text-left">
+                                <p id="user-name-display" class="text-xs font-bold text-slate-800 leading-tight">Alex Johnson</p>
+                                <p id="user-role-display" class="text-[10px] text-slate-500 leading-tight">Software Engineer</p>
+                            </div>
+                        </div>
+                        <button onclick="handleLogout()" class="text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-slate-100 transition-all" title="Log Out">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Subbar -->
+        <div class="md:hidden flex border-t border-slate-200 bg-white justify-around py-2 px-1 text-xs">
+            <button onclick="setActiveTab('explore')" id="mobile-nav-explore" class="flex flex-col items-center py-1 text-brand-600 font-bold">
+                <i class="fa-solid fa-briefcase text-base"></i>
+                <span>Explore</span>
+            </button>
+            <button onclick="setActiveTab('preferences')" id="mobile-nav-preferences" class="flex flex-col items-center py-1 text-slate-500">
+                <i class="fa-solid fa-sliders text-base"></i>
+                <span>Preferences</span>
+            </button>
+            <button onclick="setActiveTab('saved')" id="mobile-nav-saved" class="flex flex-col items-center py-1 text-slate-500 relative">
+                <i class="fa-solid fa-bookmark text-base"></i>
+                <span>Saved</span>
+            </button>
+            <button onclick="setActiveTab('applied')" id="mobile-nav-applied" class="flex flex-col items-center py-1 text-slate-500 relative">
+                <i class="fa-solid fa-paper-plane text-base"></i>
+                <span>Applied</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- Banner / Notification for Logged in Users Preference Match -->
+        <div id="preference-match-banner" class="hidden mb-6 bg-gradient-to-r from-brand-600 to-indigo-700 text-white p-4 sm:p-6 rounded-2xl shadow-lg relative overflow-hidden">
+            <div class="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="space-y-1">
+                    <span class="inline-block bg-white/20 backdrop-blur-md text-xs px-2.5 py-0.5 rounded-full font-semibold uppercase tracking-wider text-white mb-1">Customized Feed</span>
+                    <h2 class="text-lg sm:text-xl font-bold">Showing roles matching your preferences</h2>
+                    <p class="text-sm text-brand-100" id="preference-summary-text">Filtered by Tech, Full-Time, and Remote roles.</p>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <button onclick="openPreferencesModal()" class="px-4 py-2 bg-white text-brand-700 rounded-xl font-semibold text-sm hover:bg-slate-100 shadow-sm transition-all">
+                        Edit Preferences
+                    </button>
+                    <button onclick="disablePreferenceFilter()" class="px-3 py-2 bg-white/10 hover:bg-white/20 text-white rounded-xl font-medium text-sm transition-all">
+                        Show All
+                    </button>
+                </div>
+            </div>
+            <!-- Decorative Circles -->
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-white/10 pointer-events-none"></div>
+            <div class="absolute right-20 -top-10 w-24 h-24 rounded-full bg-white/5 pointer-events-none"></div>
+        </div>
+
+        <!-- Search & Filter Header -->
+        <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 mb-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <!-- Search Keyword -->
+                <div class="relative">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <input type="text" id="search-input" placeholder="Job title, skills, or company..." oninput="handleSearch()" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+
+                <!-- Field / Industry Filter -->
+                <div class="relative">
+                    <i class="fa-solid fa-layer-group absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <select id="field-filter" onchange="handleFilterChange()" class="w-full pl-10 pr-8 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none cursor-pointer">
+                        <option value="ALL">All Fields / Industries</option>
+                        <option value="Technology & IT">Technology & IT</option>
+                        <option value="Healthcare & Medical">Healthcare & Medical</option>
+                        <option value="Finance & Banking">Finance & Banking</option>
+                        <option value="Education & Academia">Education & Academia</option>
+                        <option value="Creative & Design">Creative & Design</option>
+                        <option value="Engineering & Construction">Engineering & Construction</option>
+                        <option value="Sales & Marketing">Sales & Marketing</option>
+                        <option value="Hospitality & Tourism">Hospitality & Tourism</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+
+                <!-- Job Type Filter -->
+                <div class="relative">
+                    <i class="fa-solid fa-clock absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <select id="type-filter" onchange="handleFilterChange()" class="w-full pl-10 pr-8 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all appearance-none cursor-pointer">
+                        <option value="ALL">All Employment Types</option>
+                        <option value="Full-Time">Full-Time</option>
+                        <option value="Part-Time">Part-Time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Remote">Remote</option>
+                        <option value="Internship">Internship</option>
+                    </select>
+                    <i class="fa-solid fa-chevron-down absolute right-3 top-3.5 text-slate-400 text-xs pointer-events-none"></i>
+                </div>
+
+                <!-- Location Filter -->
+                <div class="relative">
+                    <i class="fa-solid fa-location-dot absolute left-3.5 top-3.5 text-slate-400"></i>
+                    <input type="text" id="location-input" placeholder="City, country or 'Remote'" oninput="handleSearch()" class="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent transition-all">
+                </div>
+            </div>
+
+            <!-- Quick Industry Tags -->
+            <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 overflow-x-auto pb-1 text-xs no-scrollbar">
+                <span class="font-bold text-slate-400 uppercase tracking-wider text-[10px] whitespace-nowrap">Popular Fields:</span>
+                <button onclick="filterByField('Technology & IT')" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 font-medium whitespace-nowrap transition-all">💻 Tech & IT</button>
+                <button onclick="filterByField('Healthcare & Medical')" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 font-medium whitespace-nowrap transition-all">🏥 Healthcare</button>
+                <button onclick="filterByField('Finance & Banking')" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 font-medium whitespace-nowrap transition-all">📈 Finance</button>
+                <button onclick="filterByField('Creative & Design')" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 font-medium whitespace-nowrap transition-all">🎨 Creative</button>
+                <button onclick="filterByField('Sales & Marketing')" class="px-3 py-1 rounded-full bg-slate-100 hover:bg-brand-50 hover:text-brand-600 text-slate-600 font-medium whitespace-nowrap transition-all">📢 Marketing</button>
+                <button onclick="resetFilters()" class="ml-auto text-brand-600 hover:underline font-semibold whitespace-nowrap">Clear All</button>
+            </div>
+        </div>
+
+        <!-- Main Content Area: Job List & Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- Sidebar Info & Preferences Overview -->
+            <aside class="lg:col-span-1 space-y-6 order-2 lg:order-1">
+                
+                <!-- Preferences Quick Widget -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="font-bold text-slate-900 text-base">Your Preferences</h3>
+                        <button onclick="openPreferencesModal()" class="text-xs text-brand-600 hover:underline font-semibold">Manage</button>
+                    </div>
+                    <div id="preferences-widget-content" class="space-y-3 text-xs">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Career Tip Box -->
+                <div class="bg-gradient-to-br from-indigo-50 to-slate-100 p-5 rounded-2xl border border-indigo-100 text-slate-700">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 text-white flex items-center justify-center font-bold mb-3 shadow">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h4 class="font-bold text-slate-900 text-sm mb-1">Career Tip of the Day</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed mb-3">Customize your resume bullet points for every application to highlight achievements using measurable numbers.</p>
+                    <a href="#" onclick="showCustomToast('Tip: Save roles first to prepare tailored applications!')" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800">Learn More &rarr;</a>
+                </div>
+
+                <!-- Platform Stats -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm text-center">
+                    <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Platform Overview</p>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <p class="text-xl font-extrabold text-slate-900" id="stat-total-jobs">0</p>
+                            <p class="text-[11px] text-slate-500 font-medium">Open Positions</p>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <p class="text-xl font-extrabold text-slate-900" id="stat-fields">8</p>
+                            <p class="text-[11px] text-slate-500 font-medium">Industries</p>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Job Feed Section -->
+            <section class="lg:col-span-3 order-1 lg:order-2">
+
+                <!-- Header for Results -->
+                <div class="flex justify-between items-center mb-4 px-1">
+                    <div>
+                        <h2 id="feed-title" class="text-lg font-bold text-slate-900">Explore Open Roles</h2>
+                        <p id="feed-subtitle" class="text-xs text-slate-500">Showing all verified vacancies across multiple industries</p>
+                    </div>
+                    <div class="text-xs font-medium text-slate-500">
+                        Found <span id="job-count" class="font-bold text-slate-900">0</span> roles
+                    </div>
+                </div>
+
+                <!-- Job List Container -->
+                <div id="job-list-container" class="space-y-4">
+                    <!-- Dynamic Job Cards populated via JS -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="empty-state" class="hidden bg-white rounded-2xl border border-slate-200 p-12 text-center my-6">
+                    <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">No Jobs Found</h3>
+                    <p class="text-sm text-slate-500 max-w-sm mx-auto mb-6">We couldn't find any job openings matching your current search criteria or preferences.</p>
+                    <button onclick="resetFilters()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-all">
+                        Reset All Filters
+                    </button>
+                </div>
+
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+            <div class="flex items-center space-x-2">
+                <div class="w-6 h-6 rounded-md bg-brand-600 flex items-center justify-center text-white font-bold text-xs">JB</div>
+                <span class="font-semibold text-slate-700">JOB BOARD Platform &copy; 2026</span>
+            </div>
+            <div class="flex space-x-6">
+                <a href="#" onclick="showCustomToast('Privacy Policy: All mock data kept locally.')" class="hover:text-slate-800">Privacy Policy</a>
+                <a href="#" onclick="showCustomToast('Terms of Service: Mock platform for demo.')" class="hover:text-slate-800">Terms of Service</a>
+                <a href="#" onclick="showCustomToast('Contact us at support@jobboard.com')" class="hover:text-slate-800">Contact Support</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Job Details Modal -->
+    <div id="job-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 modal-blur overflow-y-auto flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden border border-slate-100 transform transition-all">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-slate-100 relative bg-slate-50/50">
+                <button onclick="closeJobModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm border border-slate-200 transition-all">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="flex items-start space-x-4">
+                    <div id="modal-company-logo" class="w-14 h-14 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-xl font-bold text-brand-600 shadow-sm shrink-0">
+                        C
+                    </div>
+                    <div>
+                        <span id="modal-field-badge" class="inline-block text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-brand-50 text-brand-700 mb-1">
+                            Technology
+                        </span>
+                        <h2 id="modal-job-title" class="text-xl font-extrabold text-slate-900">Job Title Here</h2>
+                        <p id="modal-company-name" class="text-sm font-medium text-slate-600">Company Name &bull; Location</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-700">
+                <!-- Meta tags row -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div>
+                        <p class="text-[11px] uppercase font-bold text-slate-400">Salary Range</p>
+                        <p id="modal-salary" class="font-bold text-slate-900">$100k - $120k</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] uppercase font-bold text-slate-400">Job Type</p>
+                        <p id="modal-type" class="font-bold text-slate-900">Full-Time</p>
+                    </div>
+                    <div>
+                        <p class="text-[11px] uppercase font-bold text-slate-400">Experience</p>
+                        <p id="modal-experience" class="font-bold text-slate-900">Mid-Senior Level</p>
+                    </div>
+                </div>
+
+                <!-- Job Description -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-2">Role Overview</h3>
+                    <p id="modal-description" class="text-slate-600 leading-relaxed whitespace-pre-line">
+                        Detailed job description text goes here...
+                    </p>
+                </div>
+
+                <!-- Key Responsibilities -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-2">Key Responsibilities</h3>
+                    <ul id="modal-responsibilities" class="list-disc list-inside space-y-1.5 text-slate-600">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Required Skills -->
+                <div>
+                    <h3 class="font-bold text-slate-900 text-base mb-2">Required Skills & Expertise</h3>
+                    <div id="modal-skills" class="flex flex-wrap gap-2">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal Footer / Actions -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
+                <button id="modal-save-btn" onclick="toggleSaveCurrentJob()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 text-sm flex items-center gap-2 transition-all">
+                    <i class="fa-regular fa-bookmark"></i>
+                    <span>Save Job</span>
+                </button>
+                <button id="modal-apply-btn" onclick="handleApplyCurrentJob()" class="px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-md transition-all flex items-center gap-2">
+                    <i class="fa-solid fa-paper-plane"></i>
+                    <span>Apply Now</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Preferences Modal -->
+    <div id="preferences-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 modal-blur overflow-y-auto flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 relative">
+            <button onclick="closePreferencesModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="mb-5">
+                <div class="w-10 h-10 rounded-xl bg-brand-100 text-brand-600 flex items-center justify-center font-bold text-lg mb-2">
+                    <i class="fa-solid fa-sliders"></i>
+                </div>
+                <h2 class="text-xl font-bold text-slate-900">Career Preferences</h2>
+                <p class="text-xs text-slate-500">Set your preferences to receive customized job openings tailored to your goals.</p>
+            </div>
+
+            <form id="preferences-form" onsubmit="savePreferences(event)" class="space-y-4">
+                <!-- Preferred Fields -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Preferred Industries / Fields</label>
+                    <div class="grid grid-cols-2 gap-2 text-xs" id="pref-fields-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Employment Type Preference -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Preferred Job Type</label>
+                    <select id="pref-job-type" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+                        <option value="ALL">Any Employment Type</option>
+                        <option value="Full-Time">Full-Time</option>
+                        <option value="Part-Time">Part-Time</option>
+                        <option value="Contract">Contract</option>
+                        <option value="Remote">Remote Only</option>
+                    </select>
+                </div>
+
+                <!-- Preferred Work Location -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Preferred Location</label>
+                    <input type="text" id="pref-location" placeholder="e.g. Remote, New York, London..." class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl">
+                </div>
+
+                <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
+                    <button type="button" onclick="closePreferencesModal()" class="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-semibold hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 shadow-sm">Save Preferences</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login / Sign Up Modal -->
+    <div id="auth-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 modal-blur overflow-y-auto flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+            <button onclick="closeAuthModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-700 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <!-- Toggle Auth Header -->
+            <div class="flex border-b border-slate-200 mb-6">
+                <button id="auth-tab-login" onclick="switchAuthTab('login')" class="w-1/2 pb-3 font-bold text-sm text-brand-600 border-b-2 border-brand-600">Log In</button>
+                <button id="auth-tab-signup" onclick="switchAuthTab('signup')" class="w-1/2 pb-3 font-bold text-sm text-slate-400 border-b-2 border-transparent">Create Account</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" onsubmit="handleAuthSubmit(event, 'login')" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" required id="login-email" value="alex.johnson@example.com" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" required id="login-password" value="••••••••" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">
+                    Sign In to JOB BOARD
+                </button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" onsubmit="handleAuthSubmit(event, 'signup')" class="hidden space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Full Name</label>
+                    <input type="text" required id="signup-name" placeholder="John Doe" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Professional Title / Field</label>
+                    <input type="text" required id="signup-title" placeholder="e.g. Graphic Designer, Nurse, Data Scientist" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                    <input type="email" required id="signup-email" placeholder="john@example.com" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Password</label>
+                    <input type="password" required id="signup-password" placeholder="••••••••" class="w-full p-2.5 text-sm bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-sm shadow-md transition-all">
+                    Create Free Account
+                </button>
+            </form>
+
+            <!-- Quick Demo Account Note -->
+            <div class="mt-5 p-3 rounded-xl bg-slate-50 border border-slate-100 text-[11px] text-slate-500 text-center">
+                <i class="fa-solid fa-circle-info text-brand-500 mr-1"></i> Demo mode active: Click sign in with pre-filled credentials.
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // Sample Comprehensive Job Database across multiple industries
+        const ALL_JOBS = [
+            // Technology & IT
+            {
+                id: 'tech-1',
+                title: 'Senior Full Stack Software Engineer',
+                company: 'CloudScale Technologies',
+                field: 'Technology & IT',
+                type: 'Full-Time',
+                location: 'Remote (USA / Europe)',
+                salary: '$130,000 - $160,000 / yr',
+                experience: 'Senior Level (5+ yrs)',
+                posted: '2 hours ago',
+                logoBg: 'bg-blue-600',
+                description: `We are searching for an experienced Senior Full Stack Engineer to build next-generation cloud automation tools. You will lead technical design, write clean modular code, and collaborate with cross-functional design and product teams.`,
+                responsibilities: [
+                    'Architect scalable web applications using React, Node.js, and TypeScript',
+                    'Optimize database queries and microservices for low latency',
+                    'Mentor junior and mid-level developers on code quality standard'
+                ],
+                skills: ['React', 'Node.js', 'TypeScript', 'AWS', 'PostgreSQL', 'Docker']
+            },
+            {
+                id: 'tech-2',
+                title: 'Cybersecurity Threat Analyst',
+                company: 'SecureGuard Global',
+                field: 'Technology & IT',
+                type: 'Full-Time',
+                location: 'New York, NY (Hybrid)',
+                salary: '$105,000 - $130,000 / yr',
+                experience: 'Mid Level (3+ yrs)',
+                posted: '1 day ago',
+                logoBg: 'bg-slate-800',
+                description: `Join our central SOC team monitoring enterprise network assets. Analyze security events, conduct incident responses, and implement preventative threat detection strategies.`,
+                responsibilities: [
+                    'Monitor SIEM alerts and respond to critical cyber threats in real time',
+                    'Conduct vulnerability assessments and penetration test reviews',
+                    'Document security incident root causes and mitigation steps'
+                ],
+                skills: ['SIEM', 'Python', 'Network Security', 'Firewalls', 'Incident Response']
+            },
+            {
+                id: 'tech-3',
+                title: 'AI & Data Science Specialist',
+                company: 'Neural Mind Labs',
+                field: 'Technology & IT',
+                type: 'Contract',
+                location: 'San Francisco, CA',
+                salary: '$80 - $100 / hr',
+                experience: 'Senior Level',
+                posted: '3 days ago',
+                logoBg: 'bg-purple-600',
+                description: `Help us build domain-tailored Large Language Model workflows and automated intelligence tools for fintech clients.`,
+                responsibilities: [
+                    'Fine-tune open-source LLMs on custom dataset pipelines',
+                    'Deploy machine learning models via REST APIs',
+                    'Collaborate with data engineers to build robust ETL pipelines'
+                ],
+                skills: ['Python', 'PyTorch', 'LLMs', 'Scikit-Learn', 'FastAPI']
+            },
+
+            // Healthcare & Medical
+            {
+                id: 'health-1',
+                title: 'Registered Nurse (ICU Specialist)',
+                company: 'St. Jude Community Hospital',
+                field: 'Healthcare & Medical',
+                type: 'Full-Time',
+                location: 'Chicago, IL',
+                salary: '$85,000 - $105,000 / yr',
+                experience: '2+ Years Required',
+                posted: '5 hours ago',
+                logoBg: 'bg-emerald-600',
+                description: `Providing specialized direct care for patients in critical condition. Requires active RN licensure and strong critical thinking under high-pressure clinical scenarios.`,
+                responsibilities: [
+                    'Deliver intensive nursing care to critically ill patients',
+                    'Administer complex medication regimes and monitor vital signs',
+                    'Coordinate patient care plans with physicians and specialists'
+                ],
+                skills: ['Critical Care', 'BLS/ACLS Certified', 'Patient Care', 'EHR Systems']
+            },
+            {
+                id: 'health-2',
+                title: 'Clinical Research Coordinator',
+                company: 'Apex BioPharma Research',
+                field: 'Healthcare & Medical',
+                type: 'Full-Time',
+                location: 'Boston, MA',
+                salary: '$70,000 - $88,000 / yr',
+                experience: 'Mid Level',
+                posted: '2 days ago',
+                logoBg: 'bg-teal-600',
+                description: `Manage daily operational aspects of Phase II and III clinical trials in oncology. Ensure strict compliance with FDA guidelines and trial protocols.`,
+                responsibilities: [
+                    'Recruit, screen, and enroll eligible trial candidates',
+                    'Maintain accurate case report forms and trial documentation',
+                    'Coordinate with IRB and sponsor monitors'
+                ],
+                skills: ['GCP Compliance', 'Clinical Trials', 'Data Collection', 'Oncology']
+            },
+
+            // Finance & Banking
+            {
+                id: 'fin-1',
+                title: 'Investment Banking Associate',
+                company: 'Vanguard Capital Partners',
+                field: 'Finance & Banking',
+                type: 'Full-Time',
+                location: 'London, UK',
+                salary: '£85,000 - £110,000 / yr',
+                experience: '3-5 Years',
+                posted: '1 day ago',
+                logoBg: 'bg-amber-600',
+                description: `Execute financial valuation models, M&A advisory transactions, and client pitch books for cross-border technology deals.`,
+                responsibilities: [
+                    'Build detailed LBO, DCF, and precedent transaction models',
+                    'Prepare pitch decks and confidentiality information memorandums',
+                    'Perform industry research and financial due diligence'
+                ],
+                skills: ['Financial Modeling', 'M&A', 'Valuation', 'Excel', 'Corporate Finance']
+            },
+            {
+                id: 'fin-2',
+                title: 'Financial Risk Analyst',
+                company: 'Horizon Trust Bank',
+                field: 'Finance & Banking',
+                type: 'Full-Time',
+                location: 'Remote',
+                salary: '$90,000 - $110,000 / yr',
+                experience: 'Mid Level',
+                posted: '4 days ago',
+                logoBg: 'bg-indigo-800',
+                description: `Evaluate market risk exposures, credit portfolios, and liquidity metrics across multiple asset classes.`,
+                responsibilities: [
+                    'Develop quantitative risk forecasting tools',
+                    'Ensure adherence to Basel III regulatory guidelines',
+                    'Present risk assessment reports to executive leadership'
+                ],
+                skills: ['Risk Management', 'SQL', 'Python', 'Financial Analysis', 'Basel III']
+            },
+
+            // Creative & Design
+            {
+                id: 'creative-1',
+                title: 'Lead Product Designer (UI/UX)',
+                company: 'PixelCraft Digital',
+                field: 'Creative & Design',
+                type: 'Full-Time',
+                location: 'Remote',
+                salary: '$115,000 - $140,000 / yr',
+                experience: 'Senior (5+ yrs)',
+                posted: '3 hours ago',
+                logoBg: 'bg-rose-500',
+                description: `We are looking for a visionary Lead UX/UI Designer to craft intuitive user experiences for our suite of SaaS creative software applications.`,
+                responsibilities: [
+                    'Create end-to-end user flows, wireframes, and interactive Figma prototypes',
+                    'Establish and maintain our global design system component library',
+                    'Conduct usability testing sessions with real end users'
+                ],
+                skills: ['Figma', 'UI/UX Design', 'Design Systems', 'User Research', 'Prototyping']
+            },
+            {
+                id: 'creative-2',
+                title: 'Senior Motion Graphics Animator',
+                company: 'Vivid Media Studios',
+                field: 'Creative & Design',
+                type: 'Contract',
+                location: 'Los Angeles, CA',
+                salary: '$60 - $80 / hr',
+                experience: 'Mid-Senior',
+                posted: '1 week ago',
+                logoBg: 'bg-pink-600',
+                description: `Create captivating 2D & 3D motion graphics for high-profile brand marketing campaigns and commercial streaming spots.`,
+                responsibilities: [
+                    'Animate 2D graphics and 3D visual assets in After Effects & Cinema 4D',
+                    'Collaborate with Creative Directors to conceptualize storyboards',
+                    'Deliver polished final render sequences under tight turnarounds'
+                ],
+                skills: ['After Effects', 'Cinema 4D', 'Storyboarding', '2D/3D Animation']
+            },
+
+            // Sales & Marketing
+            {
+                id: 'mkt-1',
+                title: 'Growth Marketing Manager',
+                company: 'Elevate SaaS',
+                field: 'Sales & Marketing',
+                type: 'Full-Time',
+                location: 'Austin, TX (Remote Available)',
+                salary: '$95,000 - $120,000 / yr',
+                experience: '4+ Years',
+                posted: '6 hours ago',
+                logoBg: 'bg-orange-600',
+                description: `Drive customer acquisition funnel performance across paid search, social campaigns, content partnerships, and SEO optimizations.`,
+                responsibilities: [
+                    'Manage $1M+ annual ad budgets across Google, LinkedIn, and Meta',
+                    'Run systematic A/B testing on landing pages and copy funnel',
+                    'Analyze CAC, LTV, and conversion rate metrics'
+                ],
+                skills: ['Paid Media', 'SEO', 'Google Analytics', 'A/B Testing', 'Growth Hacking']
+            },
+
+            // Education & Academia
+            {
+                id: 'edu-1',
+                title: 'Assistant Professor - Computer Science',
+                company: 'Metro State University',
+                field: 'Education & Academia',
+                type: 'Full-Time',
+                location: 'Seattle, WA',
+                salary: '$90,000 - $115,000 / yr',
+                experience: 'PhD Required',
+                posted: '4 days ago',
+                logoBg: 'bg-sky-700',
+                description: `Deliver undergraduate curriculum in Data Structures, Algorithms, and Software Engineering. Lead an active research group and mentor graduate students.`,
+                responsibilities: [
+                    'Teach core computer science courses and grade assignments',
+                    'Publish research papers in peer-reviewed academic journals',
+                    'Advise student academic capstone projects'
+                ],
+                skills: ['Teaching', 'Academic Research', 'Curriculum Design', 'Public Speaking']
+            },
+
+            // Engineering & Construction
+            {
+                id: 'eng-1',
+                title: 'Senior Civil Structural Engineer',
+                company: 'Apex Infrastructure Group',
+                field: 'Engineering & Construction',
+                type: 'Full-Time',
+                location: 'Denver, CO',
+                salary: '$110,000 - $135,000 / yr',
+                experience: '5+ Years (PE Licensed)',
+                posted: '2 days ago',
+                logoBg: 'bg-yellow-700',
+                description: `Lead structural evaluation and design for large-scale bridge, highway, and transit building projects across the Rocky Mountain region.`,
+                responsibilities: [
+                    'Perform load calculations and structural safety simulations',
+                    'Review CAD blueprints and engineering specifications',
+                    'Coordinate with municipal inspectors and site managers'
+                ],
+                skills: ['AutoCAD', 'Structural Engineering', 'PE License', 'Bridge Design']
+            }
+        ];
+
+        // State Management
+        let appState = {
+            currentUser: null, // null when logged out, or User object
+            activeTab: 'explore', // 'explore', 'preferences', 'saved', 'applied'
+            savedJobIds: new Set(),
+            appliedJobIds: new Set(),
+            preferences: {
+                fields: ['Technology & IT', 'Creative & Design'],
+                jobType: 'ALL',
+                location: ''
+            },
+            filters: {
+                keyword: '',
+                field: 'ALL',
+                type: 'ALL',
+                location: '',
+                preferencesOnly: false
+            },
+            currentModalJobId: null
+        };
+
+        // Initialize App on DOM Content Loaded
+        window.onload = function() {
+            // Load state from localStorage if available
+            loadStoredState();
+            
+            // Populate preferences fields inputs in modal
+            renderPreferencesFieldsForm();
+
+            // Initial view update
+            updateAuthUI();
+            updateStats();
+            renderFeed();
+            updateBadges();
+        };
+
+        // Storage Handlers
+        function loadStoredState() {
+            try {
+                const savedUser = localStorage.getItem('jb_user');
+                if (savedUser) appState.currentUser = JSON.parse(savedUser);
+
+                const savedPrefs = localStorage.getItem('jb_preferences');
+                if (savedPrefs) appState.preferences = JSON.parse(savedPrefs);
+
+                const savedJobs = localStorage.getItem('jb_saved');
+                if (savedJobs) appState.savedJobIds = new Set(JSON.parse(savedJobs));
+
+                const appliedJobs = localStorage.getItem('jb_applied');
+                if (appliedJobs) appState.appliedJobIds = new Set(JSON.parse(appliedJobs));
+            } catch (e) {
+                console.error("Error reading localStorage", e);
+            }
+        }
+
+        function persistState() {
+            try {
+                if (appState.currentUser) {
+                    localStorage.setItem('jb_user', JSON.stringify(appState.currentUser));
+                } else {
+                    localStorage.removeItem('jb_user');
+                }
+                localStorage.setItem('jb_preferences', JSON.stringify(appState.preferences));
+                localStorage.setItem('jb_saved', JSON.stringify(Array.from(appState.savedJobIds)));
+                localStorage.setItem('jb_applied', JSON.stringify(Array.from(appState.appliedJobIds)));
+            } catch(e) {
+                console.error("Error persisting state", e);
+            }
+        }
+
+        // Navigation Tab System
+        function setActiveTab(tabName) {
+            appState.activeTab = tabName;
+            
+            // Update desktop nav styling
+            ['explore', 'preferences', 'saved', 'applied'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                const mobBtn = document.getElementById(`mobile-nav-${t}`);
+                
+                if (t === tabName) {
+                    if (btn) {
+                        btn.className = "text-sm font-bold text-brand-600 border-b-2 border-brand-600 pb-1 transition-all";
+                    }
+                    if (mobBtn) {
+                        mobBtn.className = "flex flex-col items-center py-1 text-brand-600 font-bold";
+                    }
+                } else {
+                    if (btn) {
+                        btn.className = "text-sm font-medium text-slate-600 hover:text-slate-900 pb-1 transition-all";
+                    }
+                    if (mobBtn) {
+                        mobBtn.className = "flex flex-col items-center py-1 text-slate-500";
+                    }
+                }
+            });
+
+            // Adjust Filters depending on tab selected
+            if (tabName === 'preferences') {
+                openPreferencesModal();
+                appState.activeTab = 'explore';
+                return;
+            }
+
+            // Update Feed Header Titles according to Tab
+            const titleEl = document.getElementById('feed-title');
+            const subEl = document.getElementById('feed-subtitle');
+
+            if (tabName === 'explore') {
+                titleEl.textContent = appState.filters.preferencesOnly ? "Matches for Your Preferences" : "Explore Open Roles";
+                subEl.textContent = "Showing verified vacancies across multiple industries";
+            } else if (tabName === 'saved') {
+                titleEl.textContent = "Your Bookmarked Jobs";
+                subEl.textContent = "Positions you saved to apply later";
+            } else if (tabName === 'applied') {
+                titleEl.textContent = "Applied Positions";
+                subEl.textContent = "Roles you have submitted an application for";
+            }
+
+            renderFeed();
+        }
+
+        // Search & Filtering Engine
+        function handleSearch() {
+            appState.filters.keyword = document.getElementById('search-input').value.toLowerCase();
+            appState.filters.location = document.getElementById('location-input').value.toLowerCase();
+            renderFeed();
+        }
+
+        function handleFilterChange() {
+            appState.filters.field = document.getElementById('field-filter').value;
+            appState.filters.type = document.getElementById('type-filter').value;
+            renderFeed();
+        }
+
+        function filterByField(fieldName) {
+            document.getElementById('field-filter').value = fieldName;
+            appState.filters.field = fieldName;
+            renderFeed();
+            showCustomToast(`Filtered by ${fieldName}`);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('location-input').value = '';
+            document.getElementById('field-filter').value = 'ALL';
+            document.getElementById('type-filter').value = 'ALL';
+            
+            appState.filters = {
+                keyword: '',
+                field: 'ALL',
+                type: 'ALL',
+                location: '',
+                preferencesOnly: false
+            };
+            
+            document.getElementById('preference-match-banner').classList.add('hidden');
+            setActiveTab('explore');
+        }
+
+        function enablePreferenceFilter() {
+            if (!appState.currentUser) {
+                openAuthModal('login');
+                showCustomToast('Please log in to use tailored preferences');
+                return;
+            }
+            appState.filters.preferencesOnly = true;
+            document.getElementById('preference-match-banner').classList.remove('hidden');
+            updatePreferenceBannerText();
+            renderFeed();
+        }
+
+        function disablePreferenceFilter() {
+            appState.filters.preferencesOnly = false;
+            document.getElementById('preference-match-banner').classList.add('hidden');
+            renderFeed();
+        }
+
+        function updatePreferenceBannerText() {
+            const fieldsText = appState.preferences.fields.length > 0 
+                ? appState.preferences.fields.join(', ') 
+                : 'All fields';
+            const typeText = appState.preferences.jobType !== 'ALL' ? `, ${appState.preferences.jobType}` : '';
+            const locText = appState.preferences.location ? `, in ${appState.preferences.location}` : '';
+            
+            document.getElementById('preference-summary-text').textContent = `Filtered by ${fieldsText}${typeText}${locText}.`;
+        }
+
+        // Render Jobs Feed based on Tab and Active Filters
+        function renderFeed() {
+            const container = document.getElementById('job-list-container');
+            const emptyState = document.getElementById('empty-state');
+            container.innerHTML = '';
+
+            let filtered = ALL_JOBS.filter(job => {
+                // Tab based filters
+                if (appState.activeTab === 'saved' && !appState.savedJobIds.has(job.id)) return false;
+                if (appState.activeTab === 'applied' && !appState.appliedJobIds.has(job.id)) return false;
+
+                // User Preferences Filter override
+                if (appState.filters.preferencesOnly) {
+                    const matchField = appState.preferences.fields.length === 0 || appState.preferences.fields.includes(job.field);
+                    const matchType = appState.preferences.jobType === 'ALL' || job.type === appState.preferences.jobType;
+                    const matchLoc = !appState.preferences.location || job.location.toLowerCase().includes(appState.preferences.location.toLowerCase());
+                    if (!matchField || !matchType || !matchLoc) return false;
+                }
+
+                // Global Filter Bar conditions
+                if (appState.filters.field !== 'ALL' && job.field !== appState.filters.field) return false;
+                if (appState.filters.type !== 'ALL' && job.type !== appState.filters.type) return false;
+
+                // Keyword Search Match (Title, Company, Skills, Description)
+                if (appState.filters.keyword) {
+                    const kw = appState.filters.keyword;
+                    const matchTitle = job.title.toLowerCase().includes(kw);
+                    const matchComp = job.company.toLowerCase().includes(kw);
+                    const matchSkills = job.skills.some(s => s.toLowerCase().includes(kw));
+                    if (!matchTitle && !matchComp && !matchSkills) return false;
+                }
+
+                // Location Filter Match
+                if (appState.filters.location) {
+                    if (!job.location.toLowerCase().includes(appState.filters.location)) return false;
+                }
+
+                return true;
+            });
+
+            // Update Job Count Stat
+            document.getElementById('job-count').textContent = filtered.length;
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+            } else {
+                emptyState.classList.add('hidden');
+                filtered.forEach(job => {
+                    const card = createJobCardElement(job);
+                    container.appendChild(card);
+                });
+            }
+
+            renderPreferencesWidget();
+        }
+
+        // Create DOM element for Job Card
+        function createJobCardElement(job) {
+            const isSaved = appState.savedJobIds.has(job.id);
+            const isApplied = appState.appliedJobIds.has(job.id);
+
+            const div = document.createElement('div');
+            div.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all cursor-pointer relative group";
+            
+            div.onclick = (e) => {
+                // Ignore if clicked on save or apply button direct elements
+                if (e.target.closest('.action-btn')) return;
+                openJobModal(job.id);
+            };
+
+            div.innerHTML = `
+                <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                    <div class="flex items-start space-x-4">
+                        <div class="w-12 h-12 rounded-xl ${job.logoBg} text-white font-bold flex items-center justify-center text-lg shadow-sm shrink-0">
+                            ${job.company.substring(0, 1)}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-2 flex-wrap mb-1">
+                                <span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-700">${job.field}</span>
+                                <span class="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700">${job.type}</span>
+                                ${isApplied ? `<span class="text-[11px] font-bold px-2 py-0.5 rounded-md bg-brand-100 text-brand-700"><i class="fa-solid fa-check mr-1"></i>Applied</span>` : ''}
+                            </div>
+                            <h3 class="text-base sm:text-lg font-bold text-slate-900 group-hover:text-brand-600 transition-colors">${job.title}</h3>
+                            <p class="text-xs font-medium text-slate-500 mt-0.5">${job.company} &bull; <i class="fa-solid fa-location-dot text-[10px] text-slate-400"></i> ${job.location}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 border-slate-100">
+                        <span class="text-sm font-extrabold text-slate-900">${job.salary}</span>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="toggleSaveJob('${job.id}', event)" class="action-btn p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-400 hover:text-amber-500 transition-all ${isSaved ? 'text-amber-500 bg-amber-50 border-amber-200' : ''}" title="${isSaved ? 'Unsave Job' : 'Save Job'}">
+                                <i class="${isSaved ? 'fa-solid' : 'fa-regular'} fa-bookmark"></i>
+                            </button>
+                            <button onclick="openJobModal('${job.id}')" class="action-btn px-3.5 py-1.5 rounded-xl bg-slate-100 group-hover:bg-brand-600 text-slate-700 group-hover:text-white font-semibold text-xs transition-all">
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer details inside card -->
+                <div class="mt-4 pt-3 border-t border-slate-100 flex flex-wrap justify-between items-center text-xs text-slate-400 gap-2">
+                    <div class="flex items-center space-x-2 overflow-x-auto">
+                        ${job.skills.slice(0, 3).map(skill => `<span class="bg-slate-50 text-slate-600 px-2 py-0.5 rounded text-[11px] font-medium border border-slate-100">${skill}</span>`).join('')}
+                        ${job.skills.length > 3 ? `<span class="text-[10px] text-slate-400">+${job.skills.length - 3} more</span>` : ''}
+                    </div>
+                    <span class="text-[11px] text-slate-400"><i class="fa-regular fa-clock text-[10px] mr-1"></i>Posted ${job.posted}</span>
+                </div>
+            `;
+
+            return div;
+        }
+
+        // Preferences Widget Sidebar Renderer
+        function renderPreferencesWidget() {
+            const container = document.getElementById('preferences-widget-content');
+            if (!container) return;
+
+            const fieldsCount = appState.preferences.fields.length;
+            const fieldsText = fieldsCount > 0 ? appState.preferences.fields.slice(0, 2).join(', ') + (fieldsCount > 2 ? ` +${fieldsCount-2}` : '') : 'All Fields';
+
+            container.innerHTML = `
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="text-slate-400">Fields:</span>
+                    <span class="font-bold text-slate-800">${fieldsText}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="text-slate-400">Job Type:</span>
+                    <span class="font-bold text-slate-800">${appState.preferences.jobType}</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-600">
+                    <span class="text-slate-400">Target Location:</span>
+                    <span class="font-bold text-slate-800">${appState.preferences.location || 'Any Location'}</span>
+                </div>
+                <button onclick="enablePreferenceFilter()" class="w-full mt-2 py-2 bg-brand-50 hover:bg-brand-100 text-brand-700 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-filter"></i> Apply Preferences Feed
+                </button>
+            `;
+        }
+
+        // Job Details Modal Handlers
+        function openJobModal(jobId) {
+            const job = ALL_JOBS.find(j => j.id === jobId);
+            if (!job) return;
+
+            appState.currentModalJobId = jobId;
+
+            document.getElementById('modal-job-title').textContent = job.title;
+            document.getElementById('modal-company-name').textContent = `${job.company} • ${job.location}`;
+            document.getElementById('modal-field-badge').textContent = job.field;
+            document.getElementById('modal-salary').textContent = job.salary;
+            document.getElementById('modal-type').textContent = job.type;
+            document.getElementById('modal-experience').textContent = job.experience;
+            document.getElementById('modal-description').textContent = job.description;
+
+            const logoContainer = document.getElementById('modal-company-logo');
+            logoContainer.textContent = job.company.substring(0, 1);
+            logoContainer.className = `w-14 h-14 rounded-xl ${job.logoBg} text-white font-extrabold text-2xl flex items-center justify-center shadow-md shrink-0`;
+
+            // Responsibilities
+            const respList = document.getElementById('modal-responsibilities');
+            respList.innerHTML = job.responsibilities.map(r => `<li>${r}</li>`).join('');
+
+            // Skills
+            const skillsDiv = document.getElementById('modal-skills');
+            skillsDiv.innerHTML = job.skills.map(s => `<span class="bg-brand-50 text-brand-700 px-3 py-1 rounded-lg text-xs font-semibold">${s}</span>`).join('');
+
+            // Update Save & Apply Buttons State
+            updateModalActionButtons();
+
+            document.getElementById('job-modal').classList.remove('hidden');
+        }
+
+        function closeJobModal() {
+            document.getElementById('job-modal').classList.add('hidden');
+            appState.currentModalJobId = null;
+        }
+
+        function updateModalActionButtons() {
+            if (!appState.currentModalJobId) return;
+            const jobId = appState.currentModalJobId;
+
+            const isSaved = appState.savedJobIds.has(jobId);
+            const isApplied = appState.appliedJobIds.has(jobId);
+
+            const saveBtn = document.getElementById('modal-save-btn');
+            const applyBtn = document.getElementById('modal-apply-btn');
+
+            if (isSaved) {
+                saveBtn.innerHTML = `<i class="fa-solid fa-bookmark text-amber-500"></i><span class="text-amber-600">Saved</span>`;
+                saveBtn.className = "px-4 py-2.5 rounded-xl border border-amber-200 bg-amber-50 text-amber-700 font-semibold text-sm flex items-center gap-2";
+            } else {
+                saveBtn.innerHTML = `<i class="fa-regular fa-bookmark"></i><span>Save Job</span>`;
+                saveBtn.className = "px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold hover:bg-slate-100 text-sm flex items-center gap-2";
+            }
+
+            if (isApplied) {
+                applyBtn.innerHTML = `<i class="fa-solid fa-circle-check"></i><span>Applied Already</span>`;
+                applyBtn.className = "px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-semibold text-sm shadow-md cursor-default flex items-center gap-2 opacity-90";
+                applyBtn.disabled = true;
+            } else {
+                applyBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i><span>Apply Now</span>`;
+                applyBtn.className = "px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm shadow-md transition-all flex items-center gap-2";
+                applyBtn.disabled = false;
+            }
+        }
+
+        // Bookmark / Save logic
+        function toggleSaveJob(jobId, event) {
+            if (event) event.stopPropagation();
+
+            if (appState.savedJobIds.has(jobId)) {
+                appState.savedJobIds.delete(jobId);
+                showCustomToast('Job removed from saved list');
+            } else {
+                appState.savedJobIds.add(jobId);
+                showCustomToast('Job bookmarked successfully!');
+            }
+            
+            persistState();
+            updateBadges();
+            renderFeed();
+        }
+
+        function toggleSaveCurrentJob() {
+            if (appState.currentModalJobId) {
+                toggleSaveJob(appState.currentModalJobId);
+                updateModalActionButtons();
+            }
+        }
+
+        // Apply Logic
+        function handleApplyCurrentJob() {
+            if (!appState.currentUser) {
+                closeJobModal();
+                openAuthModal('login');
+                showCustomToast('Please login or create an account to apply');
+                return;
+            }
+
+            if (appState.currentModalJobId) {
+                appState.appliedJobIds.add(appState.currentModalJobId);
+                persistState();
+                updateBadges();
+                updateModalActionButtons();
+                renderFeed();
+                showCustomToast('🎉 Application submitted successfully!');
+            }
+        }
+
+        // Badge Counters
+        function updateBadges() {
+            document.getElementById('saved-count-badge').textContent = appState.savedJobIds.size;
+            document.getElementById('applied-count-badge').textContent = appState.appliedJobIds.size;
+        }
+
+        // Preferences Management Modal Logic
+        function renderPreferencesFieldsForm() {
+            const availableFields = [
+                'Technology & IT', 'Healthcare & Medical', 'Finance & Banking',
+                'Education & Academia', 'Creative & Design', 'Engineering & Construction',
+                'Sales & Marketing', 'Hospitality & Tourism'
+            ];
+
+            const container = document.getElementById('pref-fields-container');
+            container.innerHTML = availableFields.map(field => {
+                const checked = appState.preferences.fields.includes(field) ? 'checked' : '';
+                return `
+                    <label class="flex items-center space-x-2 p-2 rounded-lg border border-slate-200 bg-slate-50 hover:bg-white cursor-pointer transition-all">
+                        <input type="checkbox" name="pref-fields" value="${field}" ${checked} class="rounded text-brand-600 focus:ring-brand-500">
+                        <span class="text-slate-700 font-medium">${field}</span>
+                    </label>
+                `;
+            }).join('');
+        }
+
+        function openPreferencesModal() {
+            renderPreferencesFieldsForm();
+            document.getElementById('pref-job-type').value = appState.preferences.jobType;
+            document.getElementById('pref-location').value = appState.preferences.location;
+            document.getElementById('preferences-modal').classList.remove('hidden');
+        }
+
+        function closePreferencesModal() {
+            document.getElementById('preferences-modal').classList.add('hidden');
+        }
+
+        function savePreferences(event) {
+            event.preventDefault();
+            
+            const selectedFields = Array.from(document.querySelectorAll('input[name="pref-fields"]:checked')).map(cb => cb.value);
+            const jobType = document.getElementById('pref-job-type').value;
+            const location = document.getElementById('pref-location').value.trim();
+
+            appState.preferences = {
+                fields: selectedFields,
+                jobType: jobType,
+                location: location
+            };
+
+            persistState();
+            closePreferencesModal();
+            showCustomToast('Career preferences saved!');
+            
+            if (appState.filters.preferencesOnly) {
+                updatePreferenceBannerText();
+            }
+            renderFeed();
+        }
+
+        // Auth Systems (Mock Login / Sign up)
+        function openAuthModal(mode = 'login') {
+            switchAuthTab(mode);
+            document.getElementById('auth-modal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('auth-modal').classList.add('hidden');
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('login-form');
+            const signupForm = document.getElementById('signup-form');
+            const loginBtn = document.getElementById('auth-tab-login');
+            const signupBtn = document.getElementById('auth-tab-signup');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                signupForm.classList.add('hidden');
+                loginBtn.className = "w-1/2 pb-3 font-bold text-sm text-brand-600 border-b-2 border-brand-600";
+                signupBtn.className = "w-1/2 pb-3 font-bold text-sm text-slate-400 border-b-2 border-transparent";
+            } else {
+                loginForm.classList.add('hidden');
+                signupForm.classList.remove('hidden');
+                signupBtn.className = "w-1/2 pb-3 font-bold text-sm text-brand-600 border-b-2 border-brand-600";
+                loginBtn.className = "w-1/2 pb-3 font-bold text-sm text-slate-400 border-b-2 border-transparent";
+            }
+        }
+
+        function handleAuthSubmit(event, mode) {
+            event.preventDefault();
+
+            if (mode === 'login') {
+                const email = document.getElementById('login-email').value;
+                appState.currentUser = {
+                    name: 'Alex Johnson',
+                    title: 'Software Engineer',
+                    email: email
+                };
+                showCustomToast('Logged in successfully as Alex Johnson');
+            } else {
+                const name = document.getElementById('signup-name').value;
+                const title = document.getElementById('signup-title').value;
+                const email = document.getElementById('signup-email').value;
+                
+                appState.currentUser = {
+                    name: name,
+                    title: title,
+                    email: email
+                };
+                showCustomToast(`Welcome to JOB BOARD, ${name}!`);
+            }
+
+            persistState();
+            updateAuthUI();
+            closeAuthModal();
+        }
+
+        function handleLogout() {
+            appState.currentUser = null;
+            persistState();
+            updateAuthUI();
+            disablePreferenceFilter();
+            showCustomToast('Logged out successfully');
+        }
+
+        function updateAuthUI() {
+            const loggedOutDiv = document.getElementById('auth-logged-out');
+            const loggedInDiv = document.getElementById('auth-logged-in');
+
+            if (appState.currentUser) {
+                loggedOutDiv.classList.add('hidden');
+                loggedInDiv.classList.remove('hidden');
+                loggedInDiv.classList.add('flex');
+
+                document.getElementById('user-name-display').textContent = appState.currentUser.name;
+                document.getElementById('user-role-display').textContent = appState.currentUser.title;
+                document.getElementById('user-avatar').src = `https://placehold.co/100x100/2563eb/ffffff?text=${encodeURIComponent(appState.currentUser.name.charAt(0))}`;
+            } else {
+                loggedOutDiv.classList.remove('hidden');
+                loggedInDiv.classList.add('hidden');
+                loggedInDiv.classList.remove('flex');
+            }
+        }
+
+        // Platform Statistics Update
+        function updateStats() {
+            document.getElementById('stat-total-jobs').textContent = ALL_JOBS.length;
+        }
+
+        // Custom Toast Notification System
+        function showCustomToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            toast.className = "pointer-events-auto bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center space-x-3 border border-slate-700 transform translate-y-4 opacity-0 transition-all duration-300";
+            toast.innerHTML = `
+                <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i>
+                <span>${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate In
+            setTimeout(() => {
+                toast.classList.remove('translate-y-4', 'opacity-0');
+            }, 10);
+
+            // Auto Remove after 3s
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
