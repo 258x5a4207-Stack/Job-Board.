@@ -36,7 +36,7 @@ user entered in their own personal account with their personal information.
 
 3.palakaluri leela sri charan
 
-**Screenshots**
+**7.Screenshots**
 
 <img width="1080" height="1675" alt="image" src="https://github.com/user-attachments/assets/9e9b6ca6-50f2-4b0e-a04a-08bf11a6a644" />
 
