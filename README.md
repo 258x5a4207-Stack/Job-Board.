@@ -1,4 +1,4 @@
-1.Project Title
+**1.Project Title**
 
 JOB BOARD
 
