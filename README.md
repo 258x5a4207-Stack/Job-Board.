@@ -46,7 +46,6 @@ ___
 <img width="1080" height="1455" alt="image" src="https://github.com/user-attachments/assets/e72ffd16-4887-4bfa-a281-9757f504a577" />
 
 <img width="1080" height="1453" alt="image" src="https://github.com/user-attachments/assets/002c2b0a-995c-4bec-bee0-b93dcbbf27fb" />
-___
 
 **8.Project Repository**
 
